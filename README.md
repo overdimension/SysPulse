@@ -90,3 +90,18 @@ Clone the repository:
 ```bash
 git clone https://github.com/overdimension/SysPulse.git
 cd SysPulse
+```
+
+Install dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+Usage:
+
+```bash
+python -m cli.main start
+python -m cli.main metrics
+python -m cli.main processes
+```
