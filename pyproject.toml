@@ -1,0 +1,30 @@
+[project]
+name = "syspulse"
+version = "0.1.0"
+description = "Modular system monitoring tool for Windows"
+authors = [
+    { name = "Alex Demchenko" }
+]
+requires-python = ">=3.10"
+
+dependencies = [
+    "psutil",
+    "click"
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "black",
+    "flake8"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[project.scripts]
+syspulse = "cli.main:main"
