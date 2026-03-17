@@ -1,13 +1,12 @@
 import psutil
 
-mem = psutil.virtual_memory()
-
-GB = 1024 ** 3
-
 def get_memory_info():
+    mem = psutil.virtual_memory()
+    GB = 1024 ** 3 
+
     return {
-        "total": mem.total,
-        "used": mem.used,
-        "available": mem.available,
+        "total": round(mem.total / GB, 2),
+        "used": round(mem.used / GB, 2),
+        "available": round(mem.available / GB, 2),
         "percent": mem.percent
     }
