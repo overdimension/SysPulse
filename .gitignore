@@ -1,0 +1,55 @@
+# -------------------------------
+# Python compiled files
+# -------------------------------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.py[cod]
+*$py.class
+
+# -------------------------------
+# Distribution / packaging
+# -------------------------------
+build/
+dist/
+*.egg-info/
+*.egg
+*.whl
+
+# -------------------------------
+# Virtual environments
+# -------------------------------
+venv/
+.env/
+.env.local/
+
+# -------------------------------
+# IDEs and editors
+# -------------------------------
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# -------------------------------
+# Logs and temporary files
+# -------------------------------
+*.log
+*.tmp
+*.swp
+*.bak
+*.DS_Store
+*.Thumbs.db
+
+# -------------------------------
+# Test / coverage reports
+# -------------------------------
+htmlcov/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+pytest_cache/
+.pytest_cache/
+.tox/
