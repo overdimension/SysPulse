@@ -1,4 +1,13 @@
-from collectors import cpu, memory
+from collectors.cpu import CPUCollector
+from collectors.memory import MemoryCollector
 
-print("CPU Info:", cpu.get_cpu_info())
-print("Memory Info:", memory.get_memory_info())
+monitors = [CPUCollector(), MemoryCollector()]
+
+print("--SysPulse System Monitor--")
+
+for m in monitors:
+    result = m.get_data()
+    if result["status"] == "success":
+        print(f"[{result['collector'].upper()}] Usage: {result['metrics']}")
+    else:
+        print(f"Error in {result['collector']}: {result['message']}")
