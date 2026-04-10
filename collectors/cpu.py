@@ -1,14 +1,11 @@
 import psutil
+from collectors.base import BaseCollector
 
-cpu_percent = psutil.cpu_percent(interval=1)
-
-cpu_cores = psutil.cpu_count(logical=False)
-
-cpu_freq = psutil.cpu_freq().current
-
-def get_cpu_info():
-    return {
-        "cpu_percent": cpu_percent,
-        "cpu_cores": cpu_cores,
-        "cpu_freq": cpu_freq
-    }
+class CPUCollector(BaseCollector):
+    def collect(self) -> dict:
+        return {
+            "usage_percent": psutil.cpu_percent(interval=1),
+            "logical_cores": psutil.cpu_count(logical=True),
+            "physical_cores": psutil.cpu_count(logical=False),
+            "current_freq_mhz": round(psutil.cpu_freq().current, 2) if psutil.cpu_freq() else "N/A"
+        }
