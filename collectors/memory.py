@@ -1,12 +1,15 @@
 import psutil
+from collectors.base import BaseCollector
 
-def get_memory_info():
-    mem = psutil.virtual_memory()
-    GB = 1024 ** 3 
+class MemoryCollector(BaseCollector):
+    def collect(self) -> dict:
+        mem = psutil.virtual_memory()
+        GB = 1024 ** 3
 
-    return {
-        "total": round(mem.total / GB, 2),
-        "used": round(mem.used / GB, 2),
-        "available": round(mem.available / GB, 2),
-        "percent": mem.percent
-    }
+        return {
+            "total_gb": round(mem.total / GB, 2),
+            "available_gb": round(mem.available / GB, 2),
+            "used_gb": round(mem.used / GB, 2),
+            "free_gb": round(mem.free / GB, 2),
+            "percent_used": mem.percent
+        }
