@@ -1,4 +1,5 @@
 import time
+from tabulate import tabulate
 from collectors.cpu import CPUCollector
 from collectors.memory import MemoryCollector
 from collectors.disk import DiskCollector
@@ -23,21 +24,25 @@ class MonitoringAgent:
 
         try:
             while self.running:
-                self.proccess_tick()
+                self.process_tick()
                 time.sleep(self.interval)
         except KeyboardInterrupt:
             self.stop()
 
     """Цикл опроса датчиков"""
-    def proccess_tick(self):
-        print(f"\n--- Collecting data at {time.strftime('%Y-%m-%d %H:%M:%S')} ---") 
+    def process_tick(self):
+        print(f"\n--- Collecting data at {time.strftime('%Y-%m-%d %H:%M:%S')} ---")
         for collector in self.collectors:
             data = collector.get_data()
-        
+
             if data["status"] == "success":
-                metrics = data['metrics']
-                metrics_str = ", ".join([f"{key}: {value}" for key, value in metrics.items()])
-                print(f"[{data['collector'].upper()}]: {metrics_str}")
+                if data["collector"] == "processes" and "top_processes" in data["metrics"]:
+                    print(f"[{data['collector'].upper()}]:")
+                    print(tabulate(data["metrics"]["top_processes"], headers="keys", tablefmt="grid"))
+                else:
+                    metrics = data['metrics']
+                    metrics_str = ", ".join([f"{key}: {value}" for key, value in metrics.items()])
+                    print(f"[{data['collector'].upper()}]: {metrics_str}")
             else:
                 print(f"Mistake in {data['collector']}: {data.get('message', 'Unknown error')}")
 
