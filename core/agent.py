@@ -1,13 +1,17 @@
 import time
 from collectors.cpu import CPUCollector
 from collectors.memory import MemoryCollector
+from collectors.disk import DiskCollector
+from collectors.processes import ProcessesCollector
 
 class MonitoringAgent:
     def __init__(self, interval=5):
         self.interval = interval
         self.collectors = [
             CPUCollector(),
-            MemoryCollector()
+            MemoryCollector(),
+            DiskCollector(),
+            ProcessesCollector()
         ]
         self.running = False
 
