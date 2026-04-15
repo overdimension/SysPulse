@@ -15,7 +15,7 @@ class MonitoringAgent:
             ProcessesCollector()
         ]
         self.running = False
-        
+
 
     """Запуск бесконечного цикла мониторинга"""
     def start(self):
@@ -48,6 +48,8 @@ class MonitoringAgent:
             else:
                 print(f"Mistake in {data['collector']}: {data.get('message', 'Unknown error')}")
 
+        self.analyze_process_stream()
+        
 
     def analyze_process_stream(self):
         """Анализ потоковых данных о процессах"""
