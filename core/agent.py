@@ -15,6 +15,7 @@ class MonitoringAgent:
             ProcessesCollector()
         ]
         self.running = False
+        
 
     """Запуск бесконечного цикла мониторинга"""
     def start(self):
@@ -28,6 +29,7 @@ class MonitoringAgent:
                 time.sleep(self.interval)
         except KeyboardInterrupt:
             self.stop()
+
 
     """Цикл опроса датчиков"""
     def process_tick(self):
@@ -45,6 +47,23 @@ class MonitoringAgent:
                     print(f"[{data['collector'].upper()}]: {metrics_str}")
             else:
                 print(f"Mistake in {data['collector']}: {data.get('message', 'Unknown error')}")
+
+
+    def analyze_process_stream(self):
+        """Анализ потоковых данных о процессах"""
+        processes_collector = next((c for c in self.collectors if isinstance(c, ProcessesCollector)), None)
+        if processes_collector:
+            print("\nStreaming process data (Ctrl+C to stop):")
+            high_load_counter = 0
+
+            for proc in processes_collector.stream_processes():
+                if proc['cpu_percent'] > 50:
+                    high_load_counter += 1
+                    print(f"High CPU usage detected: {proc['name']} (PID: {proc['pid']}, CPU: {proc['cpu_percent']}%)")
+
+                if high_load_counter == 0:
+                    print("No high CPU usage detected in the last interval.")
+            
 
     """Остановка агента"""
     def stop(self):
