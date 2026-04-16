@@ -1,11 +1,27 @@
 import time
+import logging
+import os
 from tabulate import tabulate
 from collectors.cpu import CPUCollector
 from collectors.memory import MemoryCollector
 from collectors.disk import DiskCollector
 from collectors.processes import ProcessesCollector
 
+
+if not os.path.exists('logs'):
+    os.makedirs('logs')
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler("logs/monitoring_agent.log"),
+        logging.StreamHandler()
+    ]
+)
+
 class MonitoringAgent:
+
     def __init__(self, interval=5):
         self.interval = interval
         self.collectors = [
@@ -20,8 +36,8 @@ class MonitoringAgent:
     """Запуск бесконечного цикла мониторинга"""
     def start(self):
         self.running = True
-        print("Monitoring Agent started.")
-        print("Ctrl+C to stop.")
+        logging.info("Monitoring Agent started.")
+        logging.info("Ctrl+C to stop.")
 
         try:
             while self.running:
@@ -33,20 +49,20 @@ class MonitoringAgent:
 
     """Цикл опроса датчиков"""
     def process_tick(self):
-        print(f"\n--- Collecting data at {time.strftime('%Y-%m-%d %H:%M:%S')} ---")
+        logging.info(f"Collecting data at {time.strftime('%Y-%m-%d %H:%M:%S')}")
         for collector in self.collectors:
             data = collector.get_data()
 
             if data["status"] == "success":
                 if data["collector"] == "processes" and "top_processes" in data["metrics"]:
-                    print(f"[{data['collector'].upper()}]:")
-                    print(tabulate(data["metrics"]["top_processes"], headers="keys", tablefmt="grid"))
+                    logging.info(f"[{data['collector'].upper()}]:")
+                    logging.info(tabulate(data["metrics"]["top_processes"], headers="keys", tablefmt="grid"))
                 else:
                     metrics = data['metrics']
                     metrics_str = ", ".join([f"{key}: {value}" for key, value in metrics.items()])
-                    print(f"[{data['collector'].upper()}]: {metrics_str}")
+                    logging.info(f"[{data['collector'].upper()}]: {metrics_str}")
             else:
-                print(f"Mistake in {data['collector']}: {data.get('message', 'Unknown error')}")
+                logging.error(f"Mistake in {data['collector']}: {data.get('message', 'Unknown error')}")
 
         self.analyze_process_stream()
         
@@ -55,19 +71,19 @@ class MonitoringAgent:
         """Анализ потоковых данных о процессах"""
         processes_collector = next((c for c in self.collectors if isinstance(c, ProcessesCollector)), None)
         if processes_collector:
-            print("\nStreaming process data (Ctrl+C to stop):")
+            logging.info("\nStreaming process data (Ctrl+C to stop):")
             high_load_counter = 0
 
             for proc in processes_collector.stream_processes():
                 if proc['cpu_percent'] > 50:
                     high_load_counter += 1
-                    print(f"High CPU usage detected: {proc['name']} (PID: {proc['pid']}, CPU: {proc['cpu_percent']}%)")
+                    logging.warning(f"High CPU usage detected: {proc['name']} (PID: {proc['pid']}, CPU: {proc['cpu_percent']}%)")
 
                 if high_load_counter == 0:
-                    print("No high CPU usage detected in the last interval.")
+                    logging.info("No high CPU usage detected in the last interval.")
             
 
     """Остановка агента"""
     def stop(self):
         self.running = False
-        print("\nMonitoring Agent stopped.")
+        logging.info("\nMonitoring Agent stopped.")
