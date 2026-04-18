@@ -6,6 +6,7 @@ from collectors.cpu import CPUCollector
 from collectors.memory import MemoryCollector
 from collectors.disk import DiskCollector
 from collectors.processes import ProcessesCollector
+from storage.memory_storage import MemoryStorage
 
 
 if not os.path.exists('logs'):
@@ -31,6 +32,7 @@ class MonitoringAgent:
             ProcessesCollector()
         ]
         self.running = False
+        self.storage = MemoryStorage()
 
 
     """Запуск бесконечного цикла мониторинга"""
@@ -54,6 +56,8 @@ class MonitoringAgent:
             data = collector.get_data()
 
             if data["status"] == "success":
+                self.storage.save(data['collector'], data['metrics'])
+                logging.info(f"Data for {data['collector']} saved to RAM.")
                 if data["collector"] == "processes" and "top_processes" in data["metrics"]:
                     logging.info(f"[{data['collector'].upper()}]:")
                     logging.info(tabulate(data["metrics"]["top_processes"], headers="keys", tablefmt="grid"))
@@ -62,7 +66,7 @@ class MonitoringAgent:
                     metrics_str = ", ".join([f"{key}: {value}" for key, value in metrics.items()])
                     logging.info(f"[{data['collector'].upper()}]: {metrics_str}")
             else:
-                logging.error(f"Mistake in {data['collector']}: {data.get('message', 'Unknown error')}")
+                logging.error(f"Error in {data['collector']}: {data.get('message', 'Unknown error')}")
 
         self.analyze_process_stream()
         
