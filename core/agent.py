@@ -51,24 +51,33 @@ class MonitoringAgent:
 
     """Цикл опроса датчиков"""
     def process_tick(self):
-        logging.info(f"Collecting data at {time.strftime('%Y-%m-%d %H:%M:%S')}")
+        logging.info(f"--- Data collection cycle: {time.strftime('%H:%M:%S')} ---")
+        
         for collector in self.collectors:
-            data = collector.get_data()
+            try:
+                data = collector.get_data()
 
-            if data["status"] == "success":
-                self.storage.save(data['collector'], data['metrics'])
-                logging.info(f"Data for {data['collector']} saved to RAM.")
-                if data["collector"] == "processes" and "top_processes" in data["metrics"]:
-                    logging.info(f"[{data['collector'].upper()}]:")
-                    logging.info(tabulate(data["metrics"]["top_processes"], headers="keys", tablefmt="grid"))
+                if data["status"] == "success":
+                    self.storage.save(data['collector'], data['metrics'])
+                    logging.info(f"Данные {data['collector']} успешно сохранены.")
+
+                    if data["collector"] == "processes" and "top_processes" in data["metrics"]:
+                        logging.info(f"[{data['collector'].upper()}]:\n" + 
+                                     tabulate(data["metrics"]["top_processes"], headers="keys", tablefmt="grid"))
+                    else:
+                        metrics_str = ", ".join([f"{k}: {v}" for k, v in data['metrics'].items()])
+                        logging.info(f"[{data['collector'].upper()}]: {metrics_str}")
                 else:
-                    metrics = data['metrics']
-                    metrics_str = ", ".join([f"{key}: {value}" for key, value in metrics.items()])
-                    logging.info(f"[{data['collector'].upper()}]: {metrics_str}")
-            else:
-                logging.error(f"Error in {data['collector']}: {data.get('message', 'Unknown error')}")
+                    logging.warning(f"⚠️ Коллектор {data['collector']} сообщил об ошибке: {data.get('message')}")
 
-        self.analyze_process_stream()
+            except Exception as e:
+                logging.error(f"🚨 Непредвиденная ошибка в {collector.__class__.__name__}: {str(e)}")
+
+        # 5. Запуск потокового анализа (Large Data Processing)
+        try:
+            self.analyze_process_stream()
+        except Exception as e:
+            logging.error(f"🚨 Ошибка при потоковом анализе процессов: {e}")
         
 
     def analyze_process_stream(self):
