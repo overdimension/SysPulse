@@ -59,25 +59,25 @@ class MonitoringAgent:
 
                 if data["status"] == "success":
                     self.storage.save(data['collector'], data['metrics'])
-                    logging.info(f"Данные {data['collector']} успешно сохранены.")
+                    logging.info(f"Data from {data['collector']} saved successfully.")
 
                     if data["collector"] == "processes" and "top_processes" in data["metrics"]:
                         logging.info(f"[{data['collector'].upper()}]:\n" + 
-                                     tabulate(data["metrics"]["top_processes"], headers="keys", tablefmt="grid"))
+                        tabulate(data["metrics"]["top_processes"], headers="keys", tablefmt="grid"))
                     else:
                         metrics_str = ", ".join([f"{k}: {v}" for k, v in data['metrics'].items()])
                         logging.info(f"[{data['collector'].upper()}]: {metrics_str}")
                 else:
-                    logging.warning(f"⚠️ Коллектор {data['collector']} сообщил об ошибке: {data.get('message')}")
+                    logging.warning(f"⚠️ Collector {data['collector']} reported an error: {data.get('message')}")
 
             except Exception as e:
-                logging.error(f"🚨 Непредвиденная ошибка в {collector.__class__.__name__}: {str(e)}")
+                logging.error(f"🚨 Unexpected error in {collector.__class__.__name__}: {str(e)}")
 
         # 5. Запуск потокового анализа (Large Data Processing)
         try:
             self.analyze_process_stream()
         except Exception as e:
-            logging.error(f"🚨 Ошибка при потоковом анализе процессов: {e}")
+            logging.error(f"🚨 Error during streaming analysis of processes: {e}")
         
 
     def analyze_process_stream(self):

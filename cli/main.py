@@ -6,14 +6,14 @@ from utils.reader import analyze_logs
 def run():
     # Создаем парсер аргументов
     parser = argparse.ArgumentParser(
-        description="Sys-Pulse: Профессиональная система мониторинга ресурсов ПК"
+        description="Sys-Pulse: Professional resource monitoring system"
     )
 
     # Добавляем флаг для анализа
     parser.add_argument(
         "--analyze", 
         action="store_true", 
-        help="Запустить анализ накопленных логов вместо мониторинга"
+        help="Run analysis of accumulated logs instead of monitoring"
     )
 
     # Добавляем аргумент для интервала
@@ -21,26 +21,25 @@ def run():
         "-i", "--interval", 
         type=int, 
         default=5, 
-        help="Интервал между сборами данных в секундах (по умолчанию: 5)"
+        help="Interval between data collections in seconds (default: 5)"
     )
 
     args = parser.parse_args()
 
     # Логика выбора режима
     if args.analyze:
-        # Важно: убедись, что имя файла совпадает с тем, что в настройках logging
         analyze_logs("logs/agent.log")
     else:
-        print(f"🚀 Запуск мониторинга (интервал: {args.interval}с)...")
-        print("Нажмите Ctrl+C для остановки.")
+        print(f"🚀 Starting monitoring (interval: {args.interval}s)...")
+        print("Press Ctrl+C to stop.")
         
         try:
             agent = MonitoringAgent(interval=args.interval)
             agent.start()
         except KeyboardInterrupt:
-            print("\n🛑 Мониторинг остановлен пользователем.")
+            print("\n🛑 Monitoring stopped by user.")
         except Exception as e:
-            print(f"💥 Критическая ошибка: {e}")
+            print(f"💥 Critical error: {e}")
 
 if __name__ == "__main__":
     run()
