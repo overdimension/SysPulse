@@ -42,6 +42,9 @@ class MonitoringAgent:
         self.storage = storage
         self._prepare_environment()
 
+        if self.storage is None:
+            self.storage = MemoryStorage()
+
 
     """Запуск бесконечного цикла мониторинга"""
     def start(self):
