@@ -2,11 +2,17 @@ import psutil
 from collectors.base import BaseCollector
 
 class ProcessesCollector(BaseCollector):
+    def __init__(self):
+        super().__init__()
+        self.cpu_count = psutil.cpu_count() or 1
+
     def collect(self) -> dict:
         processes = []
 
         for proc in psutil.process_iter(['pid', 'name', 'username', 'cpu_percent', 'memory_percent']):
             try:
+                info = proc.info
+                info['cpu_percent'] = round(info['cpu_percent'] / self.cpu_count, 1)
                 processes.append(proc.info)
             except (psutil.NoSuchProcess, psutil.AccessDenied):
                 continue
@@ -21,6 +27,8 @@ class ProcessesCollector(BaseCollector):
         """Генератор для потоковой передачи данных о процессах"""
         for proc in psutil.process_iter(['pid', 'name', 'username', 'cpu_percent', 'memory_percent']):
             try:
-                yield proc.info
+                info = proc.info
+                info['cpu_percent'] = round(info['cpu_percent'] / self.cpu_count, 1)
+                yield info
             except (psutil.NoSuchProcess, psutil.AccessDenied):
                 continue
