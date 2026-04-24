@@ -12,14 +12,21 @@ from storage.memory_storage import MemoryStorage
 if not os.path.exists('logs'):
     os.makedirs('logs')
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler("logs/monitoring_agent.log"),
-        logging.StreamHandler()
-    ]
-)
+for handler in logging.root.handlers[:]:
+    logging.root.removeHandler(handler)
+
+# Настройка для ФАЙЛА 
+file_handler = logging.FileHandler("logs/agent.log", encoding='utf-8')
+file_handler.setFormatter(logging.Formatter('%(asctime)s [%(levelname)s] %(message)s'))
+file_handler.setLevel(logging.INFO)
+
+# Настройка для КОНСОЛИ 
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(logging.Formatter('%(message)s')) # ПУСТОЙ ФОРМАТ
+console_handler.setLevel(logging.INFO)
+
+# Инициализация
+logging.basicConfig(level=logging.INFO, handlers=[file_handler, console_handler])
 
 class MonitoringAgent:
 
@@ -51,33 +58,33 @@ class MonitoringAgent:
 
     """Цикл опроса датчиков"""
     def process_tick(self):
-        logging.info(f"--- Data collection cycle: {time.strftime('%H:%M:%S')} ---")
+        logging.info("\n" + "─"*60)
+        logging.info(f"Collecting metrics | {time.strftime('%H:%M:%S')}")
+        logging.info("─"*60)
         
         for collector in self.collectors:
             try:
                 data = collector.get_data()
-
                 if data["status"] == "success":
                     self.storage.save(data['collector'], data['metrics'])
-                    logging.info(f"Data from {data['collector']} saved successfully.")
-
-                    if data["collector"] == "processes" and "top_processes" in data["metrics"]:
-                        logging.info(f"[{data['collector'].upper()}]:\n" + 
-                        tabulate(data["metrics"]["top_processes"], headers="keys", tablefmt="grid"))
+                    
+                    if data["collector"] == "processes":
+                        logging.info(f"\nTop processes(CPU %):")
+                        table = tabulate(data["metrics"]["top_processes"], headers="keys", tablefmt="simple")
+                        logging.info(table)
                     else:
-                        metrics_str = ", ".join([f"{k}: {v}" for k, v in data['metrics'].items()])
-                        logging.info(f"[{data['collector'].upper()}]: {metrics_str}")
-                else:
-                    logging.warning(f"⚠️ Collector {data['collector']} reported an error: {data.get('message')}")
-
+                        name = data['collector'].upper()
+                        m = data['metrics']
+                        if name == "CPU":
+                            msg = f"LOAD: {m['usage_percent']}% | CORES: {m['logical_cores']} | FREQ: {m['current_freq_mhz']} MHz"
+                        elif name == "MEMORY":
+                            msg = f"USED: {m['used_gb']}GB / {m['total_gb']}GB ({m['percent_used']}%)"
+                        elif name == "DISK":
+                            msg = f"FREE: {m['free_gb']}GB / {m['total_gb']}GB"
+                        
+                        logging.info(f"🔹 {name:<10} | {msg}")
             except Exception as e:
-                logging.error(f"🚨 Unexpected error in {collector.__class__.__name__}: {str(e)}")
-
-        # 5. Запуск потокового анализа (Large Data Processing)
-        try:
-            self.analyze_process_stream()
-        except Exception as e:
-            logging.error(f"🚨 Error during streaming analysis of processes: {e}")
+                logging.error(f"❌ Ошибка [{collector.__class__.__name__}]: {e}")
         
 
     def analyze_process_stream(self):
