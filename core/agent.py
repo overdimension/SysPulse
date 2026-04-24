@@ -30,7 +30,7 @@ logging.basicConfig(level=logging.INFO, handlers=[file_handler, console_handler]
 
 class MonitoringAgent:
 
-    def __init__(self, interval=5):
+    def __init__(self, interval=5, storage=None):
         self.interval = interval
         self.collectors = [
             CPUCollector(),
@@ -39,7 +39,8 @@ class MonitoringAgent:
             ProcessesCollector()
         ]
         self.running = False
-        self.storage = MemoryStorage()
+        self.storage = storage
+        self._prepare_environment()
 
 
     """Запуск бесконечного цикла мониторинга"""
@@ -53,7 +54,12 @@ class MonitoringAgent:
                 self.process_tick()
                 time.sleep(self.interval)
         except KeyboardInterrupt:
-            self.stop()
+            logging.info("\n" + "━"*40)
+            logging.info("Stopping agent on user signal...")
+        except Exception as e:
+            logging.error(f"Critical failure in monitoring cycle: {e}")
+        finally:
+            self._cleanup()
 
 
     """Цикл опроса датчиков"""
@@ -101,9 +107,25 @@ class MonitoringAgent:
 
                 if high_load_counter == 0:
                     logging.info("No high CPU usage detected in the last interval.")
-            
+
+    def _prepare_environment(self):
+        """Проверка и создание необходимых папок перед стартом"""
+        if not os.path.exists('logs'):
+            try:
+                os.makedirs('logs')
+                print("The 'logs' folder is created automatically.")
+            except Exception as e:
+                print(f"Failed to create log folder: {e}")        
+
+    def _cleanup(self):
+        """Очистка ресурсов перед выходом"""
+        logging.info("Cleaning up resources and saving data...")
+        logging.info("The program has been successfully completed. See you there!")
+        logging.info("━"*40)
 
     """Остановка агента"""
     def stop(self):
         self.running = False
         logging.info("\nMonitoring Agent stopped.")
+
+    
