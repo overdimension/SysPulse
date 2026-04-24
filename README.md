@@ -108,6 +108,8 @@ Main technologies used in the project:
 - **REST API for integrations**
 - **Web dashboard**
 
+---
+
 # Installation
 
 Clone the repository:
