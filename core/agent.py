@@ -7,6 +7,7 @@ from collectors.memory import MemoryCollector
 from collectors.disk import DiskCollector
 from collectors.processes import ProcessesCollector
 from storage.memory_storage import MemoryStorage
+from storage.csv_storage import CSVStorage
 
 
 if not os.path.exists('logs'):
@@ -30,7 +31,7 @@ logging.basicConfig(level=logging.INFO, handlers=[file_handler, console_handler]
 
 class MonitoringAgent:
 
-    def __init__(self, interval=5, storage=None):
+    def __init__(self, interval=5):
         self.interval = interval
         self.collectors = [
             CPUCollector(),
@@ -39,11 +40,9 @@ class MonitoringAgent:
             ProcessesCollector()
         ]
         self.running = False
-        self.storage = storage
+        self.memory_storage = MemoryStorage()
+        self.csv_storage = CSVStorage()
         self._prepare_environment()
-
-        if self.storage is None:
-            self.storage = MemoryStorage()
 
 
     """Запуск бесконечного цикла мониторинга"""
@@ -75,7 +74,8 @@ class MonitoringAgent:
             try:
                 data = collector.get_data()
                 if data["status"] == "success":
-                    self.storage.save(data['collector'], data['metrics'])
+                    self.memory_storage.save(data['collector'], data['metrics'])
+                    self.csv_storage.save(data['collector'], data['metrics'])
                     
                     if data["collector"] == "processes":
                         logging.info(f"\nTop processes(CPU %):")
@@ -111,6 +111,7 @@ class MonitoringAgent:
                 if high_load_counter == 0:
                     logging.info("No high CPU usage detected in the last interval.")
 
+
     def _prepare_environment(self):
         """Проверка и создание необходимых папок перед стартом"""
         if not os.path.exists('logs'):
@@ -120,14 +121,16 @@ class MonitoringAgent:
             except Exception as e:
                 print(f"Failed to create log folder: {e}")        
 
+
     def _cleanup(self):
         """Очистка ресурсов перед выходом"""
         logging.info("Cleaning up resources and saving data...")
         logging.info("The program has been successfully completed. See you there!")
         logging.info("━"*40)
 
-    """Остановка агента"""
+
     def stop(self):
+        """Остановка агента"""
         self.running = False
         logging.info("\nMonitoring Agent stopped.")
 
