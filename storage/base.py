@@ -6,6 +6,7 @@ class BaseStorage(ABC):
         """Метод для сохранения данных"""
         pass
 
+
     @abstractmethod
     def get_all(self):
         """Метод для получения всех накопленных данных"""

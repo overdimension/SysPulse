@@ -5,12 +5,14 @@ class BaseCollector(ABC):
     def __init__(self):
         self.name = self.__class__.__name__.replace('Collector', '').lower()
 
+
     @abstractmethod
     def collect(self) -> dict:
         """
         Реализация сбора данных в дочерних классах
         """
         pass
+
 
     def get_data(self) -> dict:
         """

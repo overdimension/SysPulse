@@ -6,6 +6,7 @@ class ProcessesCollector(BaseCollector):
         super().__init__()
         self.cpu_count = psutil.cpu_count() or 1
 
+
     def collect(self) -> dict:
         processes = []
 
@@ -22,6 +23,7 @@ class ProcessesCollector(BaseCollector):
         return {
             "top_processes": top_processes
         }
+
 
     def stream_processes(self):
         """Генератор для потоковой передачи данных о процессах"""
