@@ -8,12 +8,14 @@ class CSVStorage(BaseStorage):
         self.filename = filename
         self._prepare_file()
 
+
     def _prepare_file(self):
         """Создает файл с заголовками, если его еще нет"""
         if not os.path.exists(self.filename):
             with open(self.filename, mode='w', newline='', encoding='utf-8') as f:
                 writer = csv.writer(f)
                 writer.writerow(['timestamp', 'collector', 'metric', 'value'])
+
 
     def save(self, collector_name, metrics):
         """Записывает метрики в CSV строку за строкой"""
@@ -23,6 +25,7 @@ class CSVStorage(BaseStorage):
             for name, value in metrics.items():
                 if isinstance(value, (int, float)):
                     writer.writerow([timestamp, collector_name, name, value])
+
 
     def get_all(self):
         """Возвращает все записанные метрики из CSV"""
@@ -35,3 +38,17 @@ class CSVStorage(BaseStorage):
             for row in reader:
                 results.append(row)
         return results
+
+
+    def get_all(self, collector_name=None):
+        """Возвращает все записанные метрики из CSV"""
+        data = []
+        try:
+            with open(self.filename, mode='r', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    if collector_name is None or row['collector'] == collector_name:
+                        data.append(row)
+        except FileNotFoundError:
+            return []
+        return data
