@@ -72,3 +72,24 @@ def analyze_metrics(csv_file="logs/metrics_history.csv"):
 
         print(f"🔹 {display_name}:")
         print(f"   Average: {avg_value:.2f}{unit} | Peak: {max_value:.2f}{unit}")
+
+    """Анализ аномалий и предупреждения на основе статистики"""
+    print(f"\n--- Anomaly Analysis and Warnings ---")
+    has_anomalies = False
+
+    thresholds = {
+        'cpu_usage_percent': 90,
+        'memory_percent_used': 92,
+        'disk_percent_used': 95
+    }
+
+    for key, values in stats.items():
+        max_val = max(values)
+        if key in thresholds and max_val > thresholds[key]:
+            unit = get_unit(key)
+            print(f"⚠️  CRITICAL LOAD: {key.replace('_', ' ').title()}")
+            print(f"   Peak  {max_val:.2f}{unit} has been recorded that exceeds the threshold {thresholds[key]}{unit}!")
+            has_anomalies = True
+    
+    if not has_anomalies:
+        print("✅ No anomalies were detected. The system is operating stably.")
