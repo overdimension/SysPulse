@@ -23,7 +23,20 @@ def analyze_logs(log_file="logs/agent.log"):
             count += 1
             
     print(f"✅ Total critical incidents: {count}")
-    
+
+
+def get_unit(key):    
+    """Определяет единицу измерения на основе ключа метрики"""
+    key_lower = key.lower()
+    if 'percent' in key_lower or 'usage' in key_lower:
+        return "%"
+    if 'gb' in key_lower:
+        return " GB"
+    if 'mhz' in key_lower:
+        return " MHz"
+    if 'cores' in key_lower or 'count' in key_lower:
+        return ""
+    return ""
     
 
 def analyze_metrics(csv_file="logs/metrics_history.csv"):
@@ -42,6 +55,9 @@ def analyze_metrics(csv_file="logs/metrics_history.csv"):
             if key not in stats:
                 stats[key] = []
             stats[key].append(float(row['value']))
+
+    print(f"\n--- Full statistics from {csv_file} ---")
+
     if not stats:
         print("📉 There is no data for analysis yet.")
         return
@@ -50,7 +66,9 @@ def analyze_metrics(csv_file="logs/metrics_history.csv"):
         avg_value = sum(values) / len(values)
         max_value = max(values)
 
+        unit = get_unit(key)
+
         display_name = key.replace('_', ' ').title()
 
         print(f"🔹 {display_name}:")
-        print(f"   Average: {avg_value:.2f}% | Peak: {max_value:.2f}%")
+        print(f"   Average: {avg_value:.2f}{unit} | Peak: {max_value:.2f}{unit}")
