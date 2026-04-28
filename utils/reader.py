@@ -94,24 +94,30 @@ def analyze_metrics(csv_file="logs/metrics_history.csv"):
 
 
 def get_top_heavy_processes(log_file="logs/agent.log"):
-    """Ищет в текстовом логе упоминания процессов с высокой нагрузкой"""
-    print(f"\n--- Top resource-intensive processes (from logs) ---")
-    heavy_procs = set()
+    print(f"\n--- Analysis of active processes (from the log table) ---")
+    found_any = False
     
     for line in log_stream_reader(log_file):
-        if "CPU:" in line and "MEM:" in line:
-            parts = line.split('|')
-            for part in parts:
-                if "CPU:" in part:
-                    try:
-                        cpu_val = float(part.split(':')[1].replace('%', '').strip())
-                        if cpu_val > 20:
-                            heavy_procs.add(line.strip())
-                    except:
-                        continue
-    
-    if heavy_procs:
-        for p in list(heavy_procs)[:5]:
-            print(f"🔥 {p}")
-    else:
-        print("ℹ️  No processes with extreme load were found.")
+        parts = line.split()
+        
+        if len(parts) < 6 or not parts[0].isdigit():
+            continue
+            
+        try:
+            pid = parts[0]
+            cpu = float(parts[2])
+            mem = float(parts[3])
+            name = parts[4]
+
+            if "Idle" in name:
+                continue
+
+            if cpu > 0.5 or mem > 1.0:
+                print(f"🔥 {name.ljust(15)} | PID: {pid.ljust(6)} | CPU: {cpu:>6.2f}% | RAM: {mem:>6.2f}%")
+                found_any = True
+                
+        except (ValueError, IndexError):
+            continue
+
+    if not found_any:
+        print("ℹ️  No active processes with high load were detected.")
