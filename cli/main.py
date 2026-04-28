@@ -1,7 +1,7 @@
 import argparse
 import sys
 from core.agent import MonitoringAgent
-from utils.reader import analyze_logs, analyze_metrics
+from utils.reader import analyze_logs, analyze_metrics, get_top_heavy_processes
 
 def run():
     # Создаем парсер аргументов
@@ -30,6 +30,7 @@ def run():
     if args.analyze:
         analyze_logs()
         analyze_metrics()
+        get_top_heavy_processes()
     else:
         print(f"🚀 Starting monitoring (interval: {args.interval}s)...")
         print("Press Ctrl+C to stop.")

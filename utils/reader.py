@@ -56,8 +56,6 @@ def analyze_metrics(csv_file="logs/metrics_history.csv"):
                 stats[key] = []
             stats[key].append(float(row['value']))
 
-    print(f"\n--- Full statistics from {csv_file} ---")
-
     if not stats:
         print("📉 There is no data for analysis yet.")
         return
@@ -93,3 +91,27 @@ def analyze_metrics(csv_file="logs/metrics_history.csv"):
     
     if not has_anomalies:
         print("✅ No anomalies were detected. The system is operating stably.")
+
+
+def get_top_heavy_processes(log_file="logs/agent.log"):
+    """Ищет в текстовом логе упоминания процессов с высокой нагрузкой"""
+    print(f"\n--- Top resource-intensive processes (from logs) ---")
+    heavy_procs = set()
+    
+    for line in log_stream_reader(log_file):
+        if "CPU:" in line and "MEM:" in line:
+            parts = line.split('|')
+            for part in parts:
+                if "CPU:" in part:
+                    try:
+                        cpu_val = float(part.split(':')[1].replace('%', '').strip())
+                        if cpu_val > 20:
+                            heavy_procs.add(line.strip())
+                    except:
+                        continue
+    
+    if heavy_procs:
+        for p in list(heavy_procs)[:5]:
+            print(f"🔥 {p}")
+    else:
+        print("ℹ️  No processes with extreme load were found.")
