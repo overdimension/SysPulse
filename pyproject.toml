@@ -1,6 +1,6 @@
 [project]
 name = "syspulse"
-version = "0.1.0"
+version = "0.2.0"
 description = "Modular system monitoring tool for Windows"
 authors = [
     { name = "Alex Demchenko" }
@@ -9,7 +9,10 @@ requires-python = ">=3.10"
 
 dependencies = [
     "psutil",
-    "click"
+    "click",
+    "streamlit",
+    "pandas",
+    "tabulate"
 ]
 
 [build-system]
