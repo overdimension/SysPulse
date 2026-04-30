@@ -36,10 +36,22 @@ def run():
     args = parser.parse_args()
 
     # Логика выбора режима
-    if args.analyze:
+    if args.ui:
+        print("🌐 Starting web dashboard...")
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        dash_path = os.path.normpath(os.path.join(current_dir, "..", "web", "dash.py"))
+        try:
+            subprocess.run([sys.executable, "-m", "streamlit", "run", dash_path])
+        except KeyboardInterrupt:
+            print("\n🛑 Web dashboard stopped by user.")
+        
+        sys.exit(0)
+
+    elif args.analyze:
         analyze_logs()
         analyze_metrics()
         get_top_heavy_processes()
+
     else:
         print(f"🚀 Starting monitoring (interval: {args.interval}s)...")
         print("Press Ctrl+C to stop.")
@@ -52,17 +64,5 @@ def run():
         except Exception as e:
             print(f"💥 Critical error: {e}")
 
-    if args.ui:
-        print("🌐 Starting web dashboard...")
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        dash_path = os.path.join(current_dir, "..", "web", "dash.py")
-        try:
-            subprocess.run(["streamlit", "run", dash_path])
-        except KeyboardInterrupt:
-            print("\n🛑 Web dashboard stopped by user.")
-        except FileNotFoundError:
-            print("💥 Streamlit is not installed. Please install it with 'pip install streamlit' and try again.")
-        return
-        
 if __name__ == "__main__":
     run()
