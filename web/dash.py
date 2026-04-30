@@ -25,9 +25,14 @@ while True:
     with placeholder.container():
         if df is not None:
             #Getting the latest values ​​for the cards
-            last_cpu = df[df['metric'] == 'usage_percent']['value'].iloc[-1]
-            last_mem = df[df['metric'] == 'percent_used']['value'].iloc[-1]
-            last_disk = df[df['metric'] == 'percent_used']['value'].iloc[-1]
+            try:
+                last_cpu = df[df['metric'] == 'usage_percent']['value'].iloc[-1]
+                mem_data = df[df['collector'] == 'memory']
+                last_mem = mem_data['value'].iloc[-1] if not mem_data.empty else 0
+                disk_data = df[df['collector'] == 'disk']
+                last_disk = disk_data['value'].iloc[-1] if not disk_data.empty else 0
+            except(IndexError, KeyError):
+                last_cpu, last_mem, last_disk = 0, 0, 0
 
             #Main indicators
             m1, m2, m3 = st.columns(3)
@@ -46,7 +51,7 @@ while True:
 
             with col2:
                 st.subheader("📈 Memory History")
-                mem_history = df[df['metric'] == 'percent_used'].tail(50)
+                mem_history = df[(df['collector'] == 'memory') & (df['metric'] == 'percent_used')].tail(50)
                 st.line_chart(mem_history.set_index('timestamp')['value'])
 
             st.subheader("📝 Last Records in Database")
