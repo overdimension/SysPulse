@@ -50,7 +50,7 @@ while True:
                 st.line_chart(mem_history.set_index('timestamp')['value'])
 
             st.subheader("📝 Last Records in Database")
-            st.dataframe(df.tail(15), use_container_width=True)
+            st.dataframe(df.tail(15), width="stretch")
         else:
             st.warning("⏳ Waiting for data... Make sure the collectors are running and writing to the CSV file.")
 
