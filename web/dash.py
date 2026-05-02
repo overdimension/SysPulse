@@ -3,11 +3,11 @@ import pandas as pd
 import os
 import time
 
+from core.config import CSV_PATH, CHART_COLORS
+
 st.set_page_config(page_title="SysPulse Dashboard", layout="wide")
 
 st.title("🚀 SysPulse: System Monitoring")
-
-CSV_PATH = "logs/metrics_history.csv"
 
 def load_data():
     if os.path.exists(CSV_PATH):
@@ -47,12 +47,12 @@ while True:
             with col1:
                 st.subheader("📈 CPU History")
                 cpu_history = df[df['metric'] == 'usage_percent'].tail(50)
-                st.line_chart(cpu_history.set_index('timestamp')['value'])
+                st.line_chart(cpu_history.set_index('timestamp')['value'], color=CHART_COLORS['cpu'])
 
             with col2:
                 st.subheader("📈 Memory History")
                 mem_history = df[(df['collector'] == 'memory') & (df['metric'] == 'percent_used')].tail(50)
-                st.line_chart(mem_history.set_index('timestamp')['value'])
+                st.line_chart(mem_history.set_index('timestamp')['value'], color=CHART_COLORS['memory'])
 
             st.subheader("📝 Last Records in Database")
             st.dataframe(df.tail(15), width="stretch")
