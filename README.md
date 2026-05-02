@@ -136,4 +136,8 @@ python -m cli.main --interval 1
 
 #Log analysis mode
 python -m cli.main --analyze
+
+#Web-page
+python -m cli.main --ui 
+(use in another terminal window after starting the main agent loop "python -m cli.main")
 ```
