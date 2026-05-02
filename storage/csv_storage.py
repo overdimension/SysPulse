@@ -2,9 +2,10 @@ import csv
 import os
 import time
 from storage.base import BaseStorage
+from core.config import CSV_PATH
 
 class CSVStorage(BaseStorage):
-    def __init__(self, filename="logs/metrics_history.csv"):
+    def __init__(self, filename=CSV_PATH):
         self.filename = filename
         self._prepare_file()
 
