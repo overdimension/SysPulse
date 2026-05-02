@@ -2,7 +2,7 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 LOG_DIR = os.path.join(BASE_DIR, 'logs')
-CSV_PATH = os.path.join(BASE_DIR, "metrics_history.csv")
+CSV_PATH = os.path.join(LOG_DIR, "metrics_history.csv")
 
 if not os.path.exists(LOG_DIR):
     os.makedirs(LOG_DIR)
