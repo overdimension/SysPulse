@@ -8,12 +8,12 @@ class TaskScheduler:
         self.is_running = False
 
     def add_job(self, task_func, interval=DEFAULT_INTERVAL):
-        """Добавляет задачу в расписание"""
+        """Adds a task to the schedule"""
         schedule.every(interval).seconds.do(task_func)
         print(f"📅 Task registered: {task_func.__name__} every {interval}s")
 
     def run_pending(self):
-        """Запуск цикла проверки задач"""
+        """Start the loop to check for pending tasks"""
         self.is_running = True
         while self.is_running:
             schedule.run_pending()

@@ -4,7 +4,7 @@ import os
 
 def log_stream_reader(file_path):
     """
-    Инкрементальное чтение логов без загрузки всего файла в RAM.
+    Incremental reading of logs without loading the entire file into RAM.
     """
     if os.path.exists(file_path):
         with open(file_path, 'r', encoding='utf-8') as f:
@@ -13,7 +13,7 @@ def log_stream_reader(file_path):
 
 
 def analyze_logs(log_file="logs/agent.log"):
-    """Анализ ошибок, используя потоковое чтение логов"""
+    """Analyze errors using streaming log reading"""
     count = 0
     print(f"--- Error analysis in {log_file} ---")
     
@@ -26,7 +26,7 @@ def analyze_logs(log_file="logs/agent.log"):
 
 
 def get_unit(key):    
-    """Определяет единицу измерения на основе ключа метрики"""
+    """Determines the unit of measurement based on the metric key"""
     key_lower = key.lower()
     if 'percent' in key_lower or 'usage' in key_lower:
         return "%"
@@ -40,7 +40,7 @@ def get_unit(key):
     
 
 def analyze_metrics(csv_file="logs/metrics_history.csv"):
-    """Анализ метрик из CSV с помощью потокового чтения"""
+    """Analyze metrics from CSV using streaming read"""
     if not os.path.exists(csv_file):
         print(f"📊 Data in {csv_file} not available yet.")
         return
@@ -71,7 +71,7 @@ def analyze_metrics(csv_file="logs/metrics_history.csv"):
         print(f"🔹 {display_name}:")
         print(f"   Average: {avg_value:.2f}{unit} | Peak: {max_value:.2f}{unit}")
 
-    """Анализ аномалий и предупреждения на основе статистики"""
+    """Analyze anomalies and warnings based on statistics"""
     print(f"\n--- Anomaly Analysis and Warnings ---")
     has_anomalies = False
 

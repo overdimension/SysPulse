@@ -11,7 +11,7 @@ class CSVStorage(BaseStorage):
 
 
     def _prepare_file(self):
-        """Создает файл с заголовками, если его еще нет"""
+        """Creates a file with headers if it doesn't exist"""
         if not os.path.exists(self.filename):
             with open(self.filename, mode='w', newline='', encoding='utf-8') as f:
                 writer = csv.writer(f)
@@ -19,7 +19,7 @@ class CSVStorage(BaseStorage):
 
 
     def save(self, collector_name, metrics):
-        """Записывает метрики в CSV строку за строкой"""
+        """Writes metrics to CSV row by row"""
         timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
         with open(self.filename, mode='a', newline='', encoding='utf-8') as f:
             writer = csv.writer(f)
@@ -28,21 +28,8 @@ class CSVStorage(BaseStorage):
                     writer.writerow([timestamp, collector_name, name, value])
 
 
-    def get_all(self):
-        """Возвращает все записанные метрики из CSV"""
-        if not os.path.exists(self.filename):
-            return []
-        
-        results = []
-        with open(self.filename, mode='r', encoding='utf-8') as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                results.append(row)
-        return results
-
-
     def get_all(self, collector_name=None):
-        """Возвращает все записанные метрики из CSV"""
+        """Returns all recorded metrics from CSV"""
         data = []
         try:
             with open(self.filename, mode='r', encoding='utf-8') as f:

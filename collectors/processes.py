@@ -26,7 +26,7 @@ class ProcessesCollector(BaseCollector):
 
 
     def stream_processes(self):
-        """Генератор для потоковой передачи данных о процессах"""
+        """Generator for streaming process data"""
         for proc in psutil.process_iter(['pid', 'name', 'username', 'cpu_percent', 'memory_percent']):
             try:
                 info = proc.info

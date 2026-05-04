@@ -9,14 +9,14 @@ class BaseCollector(ABC):
     @abstractmethod
     def collect(self) -> dict:
         """
-        Реализация сбора данных в дочерних классах
+        Implementation for collecting data in child classes
         """
         pass
 
 
     def get_data(self) -> dict:
         """
-        Метод для получения данных с добавлением временной метки
+        Method for getting data with timestamp
         """
         try:
             return {

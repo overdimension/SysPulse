@@ -14,7 +14,7 @@ from storage.csv_storage import CSVStorage
 from core.config import DEFAULT_INTERVAL, LOG_DIR, CSV_PATH, APP_VERSION
 from core.scheduler import TaskScheduler
 
-#Настройка логирования
+#Logging settings
 if not os.path.exists(LOG_DIR):
     os.makedirs(LOG_DIR)
 
@@ -47,14 +47,14 @@ class MonitoringAgent:
         self.csv_storage = CSVStorage()
 
     def start(self):
-        """Запуск агента через планировщик"""
+        """Start the agent via the scheduler"""
         logging.info(f"🚀 SysPulse Agent v{APP_VERSION} started.")
         logging.info("Press Ctrl+C to stop.")
 
-        #Опрос всех датчиков (каждые 5 сек)
+        #Poll all sensors
         self.scheduler.add_job(self.process_tick, self.interval)
         
-        #Глубокий анализ процессов (каждые 30 сек)
+        #Deep process analysis
         self.scheduler.add_job(self.analyze_process_stream, 30)
 
         try:
@@ -66,7 +66,7 @@ class MonitoringAgent:
             self.stop()
 
     def process_tick(self):
-        """Основной цикл сбора данных"""
+        """Main data collection loop"""
         logging.info("\n" + "─"*60)
         logging.info(f"Collecting metrics | {time.strftime('%H:%M:%S')}")
         logging.info("─"*60)
@@ -82,7 +82,7 @@ class MonitoringAgent:
                 logging.error(f"❌ Error in [{collector.__class__.__name__}]: {e}")
 
     def _display_metrics(self, data):
-        """Красивый вывод метрик в лог/консоль"""
+        """Beautiful display of metrics in log/console"""
         name = data['collector'].upper()
         m = data['metrics']
 
@@ -98,7 +98,7 @@ class MonitoringAgent:
             logging.info(f"🔹 {name:<10} | FREE: {m['free_gb']}GB / {m['total_gb']}GB")
 
     def analyze_process_stream(self):
-        """Отдельная задача анализа тяжелых процессов"""
+        """Separate task for analyzing heavy processes"""
         proc_col = next((c for c in self.collectors if isinstance(c, ProcessesCollector)), None)
         if proc_col:
             logging.info("\n🔍 Running background stream analysis...")
@@ -112,7 +112,7 @@ class MonitoringAgent:
                 logging.info("✅ System health: OK (No heavy processes)")
 
     def stop(self):
-        """Остановка и очистка (бывший _cleanup)"""
+        """Stop the agent and clean up resources"""
         logging.info("\n" + "━"*40)
         logging.info("Cleaning up resources and saving data...")
         self.scheduler.stop()

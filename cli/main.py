@@ -6,19 +6,19 @@ from core.agent import MonitoringAgent
 from utils.reader import analyze_logs, analyze_metrics, get_top_heavy_processes
 
 def run():
-    # Создаем парсер аргументов
+    # Creating an argument parser
     parser = argparse.ArgumentParser(
         description="Sys-Pulse: Professional resource monitoring system"
     )
 
-    # Добавляем флаг для анализа
+    # Adding argument for analysis
     parser.add_argument(
         "--analyze", 
         action="store_true", 
         help="Run analysis of accumulated logs instead of monitoring"
     )
 
-    # Добавляем аргумент для интервала
+    # Adding argument for interval
     parser.add_argument(
         "-i", "--interval", 
         type=int, 
@@ -26,7 +26,7 @@ def run():
         help="Interval between data collections in seconds (default: 5)"
     )
 
-    # Добавляем флаг для запуска веб-интерфейса
+    # Adding argument for web interface
     parser.add_argument(
         "--ui",
         action="store_true",
@@ -35,7 +35,7 @@ def run():
 
     args = parser.parse_args()
 
-    # Логика выбора режима
+    # Logic for selecting mode
     if args.ui:
         print("🌐 Starting web dashboard...")
         current_dir = os.path.dirname(os.path.abspath(__file__))
