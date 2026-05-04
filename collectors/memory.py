@@ -1,7 +1,9 @@
 import psutil
 from collectors.base import BaseCollector
+from core.decorators import log
 
 class MemoryCollector(BaseCollector):
+    @log(level="INFO")
     def collect(self) -> dict:
         mem = psutil.virtual_memory()
         GB = 1024 ** 3

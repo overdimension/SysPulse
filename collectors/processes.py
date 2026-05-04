@@ -1,5 +1,6 @@
 import psutil
 from collectors.base import BaseCollector
+from core.decorators import log
 
 class ProcessesCollector(BaseCollector):
     def __init__(self):
@@ -7,6 +8,7 @@ class ProcessesCollector(BaseCollector):
         self.cpu_count = psutil.cpu_count() or 1
 
 
+    @log(level="INFO")
     def collect(self) -> dict:
         processes = []
 

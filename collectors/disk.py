@@ -1,7 +1,9 @@
 import psutil
 from collectors.base import BaseCollector
+from core.decorators import log
 
 class DiskCollector(BaseCollector):
+    @log(level="INFO")
     def collect(self) -> dict:
         usage = psutil.disk_usage('/')
         GB = 1024 ** 3

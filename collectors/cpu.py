@@ -1,7 +1,9 @@
 import psutil
 from collectors.base import BaseCollector
+from core.decorators import log
 
 class CPUCollector(BaseCollector):
+    @log(level="INFO")
     def collect(self) -> dict:
         return {
             "usage_percent": psutil.cpu_percent(interval=1),

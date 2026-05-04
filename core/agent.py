@@ -13,6 +13,7 @@ from storage.csv_storage import CSVStorage
 
 from core.config import DEFAULT_INTERVAL, LOG_DIR, CSV_PATH, APP_VERSION
 from core.scheduler import TaskScheduler
+from core.decorators import log
 
 #Logging settings
 if not os.path.exists(LOG_DIR):
@@ -46,6 +47,7 @@ class MonitoringAgent:
         self.memory_storage = MemoryStorage()
         self.csv_storage = CSVStorage()
 
+    @log(level="INFO")
     def start(self):
         """Start the agent via the scheduler"""
         logging.info(f"🚀 SysPulse Agent v{APP_VERSION} started.")
@@ -65,6 +67,7 @@ class MonitoringAgent:
             logging.error(f"💥 Critical error: {e}")
             self.stop()
 
+    @log(level="INFO")
     def process_tick(self):
         """Main data collection loop"""
         logging.info("\n" + "─"*60)
@@ -97,6 +100,7 @@ class MonitoringAgent:
         elif name == "DISK":
             logging.info(f"🔹 {name:<10} | FREE: {m['free_gb']}GB / {m['total_gb']}GB")
 
+    @log(level="INFO")
     def analyze_process_stream(self):
         """Separate task for analyzing heavy processes"""
         proc_col = next((c for c in self.collectors if isinstance(c, ProcessesCollector)), None)
@@ -111,6 +115,7 @@ class MonitoringAgent:
             if high_load_counter == 0:
                 logging.info("✅ System health: OK (No heavy processes)")
 
+    @log(level="ERROR")
     def stop(self):
         """Stop the agent and clean up resources"""
         logging.info("\n" + "━"*40)

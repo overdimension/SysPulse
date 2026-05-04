@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import datetime
+from core.decorators import log
 
 class BaseCollector(ABC):
     def __init__(self):
@@ -14,6 +15,7 @@ class BaseCollector(ABC):
         pass
 
 
+    @log(level="INFO")
     def get_data(self) -> dict:
         """
         Method for getting data with timestamp
