@@ -5,7 +5,7 @@ from datetime import datetime
 
 def log(level="INFO"):
     def decorator(func):
-        is_async = asyncio.is_coroutinefunction(func)
+        is_async = asyncio.iscoroutinefunction(func)
 
         # An additional function for logging (to avoid duplicating the code in both wrappers)
         def log_message(args, kwargs, result, exec_time, error=None):
