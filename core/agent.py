@@ -14,6 +14,7 @@ from storage.csv_storage import CSVStorage
 from core.config import DEFAULT_INTERVAL, LOG_DIR, CSV_PATH, APP_VERSION
 from core.scheduler import TaskScheduler
 from core.decorators import log
+from core.events import EventEmitter
 
 #Logging settings
 if not os.path.exists(LOG_DIR):
@@ -33,9 +34,15 @@ console_handler.setLevel(logging.INFO)
 logging.basicConfig(level=logging.INFO, handlers=[file_handler, console_handler])
 
 class MonitoringAgent:
+    # Event type constants
+    EVENT_METRICS_COLLECTED = "metrics_collected"
+    EVENT_DISPLAY_METRICS = "display_metrics"
+    EVENT_HIGH_LOAD = "high_load"
+    
     def __init__(self, interval=DEFAULT_INTERVAL):
         self.interval = interval
         self.scheduler = TaskScheduler()
+        self.event_emitter = EventEmitter()
         
         self.collectors = [
             CPUCollector(),
@@ -46,6 +53,9 @@ class MonitoringAgent:
         
         self.memory_storage = MemoryStorage()
         self.csv_storage = CSVStorage()
+        
+        # Register default storage listeners
+        self._register_storage_listeners()
 
     @log(level="INFO")
     def start(self):
@@ -78,9 +88,9 @@ class MonitoringAgent:
             try:
                 data = collector.get_data()
                 if data["status"] == "success":
-                    self.memory_storage.save(data['collector'], data['metrics'])
-                    self.csv_storage.save(data['collector'], data['metrics'])
-                    self._display_metrics(data)
+                    # Emit event instead of direct storage calls
+                    self.event_emitter.emit(self.EVENT_METRICS_COLLECTED, data)
+                    self.event_emitter.emit(self.EVENT_DISPLAY_METRICS, data)
             except Exception as e:
                 logging.error(f"❌ Error in [{collector.__class__.__name__}]: {e}")
 
@@ -100,6 +110,24 @@ class MonitoringAgent:
         elif name == "DISK":
             logging.info(f"🔹 {name:<10} | FREE: {m['free_gb']}GB / {m['total_gb']}GB")
 
+    def _register_storage_listeners(self):
+        """Register event listeners for storage operations"""
+        self.event_emitter.subscribe(self.EVENT_METRICS_COLLECTED, self._on_metrics_collected)
+        self.event_emitter.subscribe(self.EVENT_DISPLAY_METRICS, self._display_metrics)
+        self.event_emitter.subscribe(self.EVENT_HIGH_LOAD, self._on_high_load)
+    
+    def _on_metrics_collected(self, data):
+        """Handle metrics collected event - persist to storage"""
+        try:
+            self.memory_storage.save(data['collector'], data['metrics'])
+            self.csv_storage.save(data['collector'], data['metrics'])
+        except Exception as e:
+            logging.error(f"❌ Error saving metrics: {e}")
+    
+    def _on_high_load(self, proc):
+        """Handle high load process event"""
+        logging.warning(f"⚠️ HIGH LOAD: {proc['name']} (PID: {proc['pid']}, CPU: {proc['cpu_percent']}%)")
+
     @log(level="INFO")
     def analyze_process_stream(self):
         """Separate task for analyzing heavy processes"""
@@ -109,7 +137,7 @@ class MonitoringAgent:
             high_load_counter = 0
             for proc in proc_col.stream_processes():
                 if proc['cpu_percent'] > 50:
-                    logging.warning(f"⚠️ HIGH LOAD: {proc['name']} (PID: {proc['pid']}, CPU: {proc['cpu_percent']}%)")
+                    self.event_emitter.emit(self.EVENT_HIGH_LOAD, proc)
                     high_load_counter += 1
             
             if high_load_counter == 0:
