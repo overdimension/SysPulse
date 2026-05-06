@@ -51,8 +51,10 @@ class MonitoringAgent:
             ProcessesCollector()
         ]
         
-        self.memory_storage = MemoryStorage()
-        self.csv_storage = CSVStorage()
+        self.storages = [
+            MemoryStorage(),
+            CSVStorage()
+        ]
         
         # Register default storage listeners
         self._register_storage_listeners()
@@ -112,17 +114,22 @@ class MonitoringAgent:
 
     def _register_storage_listeners(self):
         """Register event listeners for storage operations"""
-        self.event_emitter.subscribe(self.EVENT_METRICS_COLLECTED, self._on_metrics_collected)
+        for storage in self.storages:
+            self.event_emitter.subscribe(self.EVENT_METRICS_COLLECTED, lambda data, s=storage: self._save_to_storage(s, data))
         self.event_emitter.subscribe(self.EVENT_DISPLAY_METRICS, self._display_metrics)
         self.event_emitter.subscribe(self.EVENT_HIGH_LOAD, self._on_high_load)
     
-    def _on_metrics_collected(self, data):
-        """Handle metrics collected event - persist to storage"""
+    def add_storage(self, storage):
+        """Add a new storage listener to the agent"""
+        self.storages.append(storage)
+        self.event_emitter.subscribe(self.EVENT_METRICS_COLLECTED, lambda data, s=storage: self._save_to_storage(s, data))
+    
+    def _save_to_storage(self, storage, data):
+        """Save metrics to a specific storage instance"""
         try:
-            self.memory_storage.save(data['collector'], data['metrics'])
-            self.csv_storage.save(data['collector'], data['metrics'])
+            storage.save(data['collector'], data['metrics'])
         except Exception as e:
-            logging.error(f"❌ Error saving metrics: {e}")
+            logging.error(f"❌ Error saving metrics to {storage.__class__.__name__}: {e}")
     
     def _on_high_load(self, proc):
         """Handle high load process event"""
