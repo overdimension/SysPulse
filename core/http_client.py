@@ -11,3 +11,14 @@ class BaseHttpClient(HttpClient):
     def send_request(self, url: str, method: str = "GET", data: dict = None):
         print(f"[BaseClient] Відправка {method} запиту на {url}...")
         return {"status": 200, "body": "Success"}
+
+class AuthProxy(HttpClient):
+    def __init__(self, real_client: HttpClient, api_key: str):
+        self._real_client = real_client 
+        self._api_key = api_key
+
+    def send_request(self, url: str, method: str = "GET", data: dict = None):
+        print("[AuthProxy] Інжектуємо API Key у заголовок...")
+        #AuthProxy
+        headers = {"Authorization": f"Bearer {self._api_key}"}
+        return self._real_client.send_request(url, method, data)
