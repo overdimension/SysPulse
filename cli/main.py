@@ -33,6 +33,14 @@ def run():
         help="Run the web dashboard (Streamlit)"
     )
 
+    # Adding argument for API key (cloud export)
+    parser.add_argument(
+        "--api-key",
+        type=str,
+        default=None,
+        help="API key for cloud export (or set SYSPULSE_API_KEY environment variable)"
+    )
+
     args = parser.parse_args()
 
     # Logic for selecting mode
@@ -56,8 +64,11 @@ def run():
         print(f"🚀 Starting monitoring (interval: {args.interval}s)...")
         print("Press Ctrl+C to stop.")
         
+        # Use API key from argument or environment variable
+        api_key = args.api_key or os.getenv('SYSPULSE_API_KEY')
+        
         try:
-            agent = MonitoringAgent(interval=args.interval)
+            agent = MonitoringAgent(interval=args.interval, api_key=api_key)
             agent.start()
         except KeyboardInterrupt:
             print("\n🛑 Monitoring stopped by user.")

@@ -10,6 +10,7 @@ from collectors.disk import DiskCollector
 from collectors.processes import ProcessesCollector
 from storage.memory_storage import MemoryStorage
 from storage.csv_storage import CSVStorage
+from core.http_client import CloudExporter, AuthProxy, BaseHttpClient
 
 from core.config import DEFAULT_INTERVAL, LOG_DIR, CSV_PATH, APP_VERSION
 from core.scheduler import TaskScheduler
@@ -39,7 +40,7 @@ class MonitoringAgent:
     EVENT_DISPLAY_METRICS = "display_metrics"
     EVENT_HIGH_LOAD = "high_load"
     
-    def __init__(self, interval=DEFAULT_INTERVAL):
+    def __init__(self, interval=DEFAULT_INTERVAL, api_key=None):
         self.interval = interval
         self.scheduler = TaskScheduler()
         self.event_emitter = EventEmitter()
@@ -55,6 +56,17 @@ class MonitoringAgent:
             MemoryStorage(),
             CSVStorage()
         ]
+        
+        # Initialize cloud exporter if API key is provided
+        self.cloud_exporter = None
+        if api_key:
+            try:
+                base_client = BaseHttpClient()
+                auth_client = AuthProxy(base_client, api_key)
+                self.cloud_exporter = CloudExporter(auth_client)
+                logging.info("☁️ Cloud export enabled")
+            except Exception as e:
+                logging.error(f"❌ Failed to initialize cloud exporter: {e}")
         
         # Register default storage listeners
         self._register_storage_listeners()
@@ -128,8 +140,22 @@ class MonitoringAgent:
         """Save metrics to a specific storage instance"""
         try:
             storage.save(data['collector'], data['metrics'])
+            # Also export to cloud if exporter is available
+            if self.cloud_exporter:
+                self._export_to_cloud(data)
         except Exception as e:
             logging.error(f"❌ Error saving metrics to {storage.__class__.__name__}: {e}")
+    
+    def _export_to_cloud(self, data):
+        """Export metrics to cloud"""
+        try:
+            result = self.cloud_exporter.export_data(data['metrics'])
+            if result.get('status') == 200:
+                logging.debug("✅ Metrics exported to cloud")
+            else:
+                logging.warning(f"⚠️ Cloud export returned status: {result.get('status')}")
+        except Exception as e:
+            logging.error(f"❌ Error exporting to cloud: {e}")
     
     def _on_high_load(self, proc):
         """Handle high load process event"""

@@ -16,3 +16,7 @@ CHART_COLORS = {
     "memory": "#0068C9",
     "disk": "#29B09D"
 }
+
+# API Configuration
+API_KEY = os.getenv('SYSPULSE_API_KEY', None)
+CLOUD_API_URL = "https://api.syspulse.com/v1/metrics"

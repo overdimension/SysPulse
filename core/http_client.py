@@ -22,3 +22,11 @@ class AuthProxy(HttpClient):
         #AuthProxy
         headers = {"Authorization": f"Bearer {self._api_key}"}
         return self._real_client.send_request(url, method, data)
+
+class CloudExporter:
+    def __init__(self, client: HttpClient): #DI
+        self.client = client
+
+    def export_data(self, data):
+        url = "https://api.syspulse.com/v1/metrics"
+        return self.client.send_request(url, method="POST", data=data)
