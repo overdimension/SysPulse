@@ -9,7 +9,7 @@ class HttpClient(ABC):
 #Basic implementation of HttpClient
 class BaseHttpClient(HttpClient):
     def send_request(self, url: str, method: str = "GET", data: dict = None):
-        print(f"[BaseClient] Відправка {method} запиту на {url}...")
+        print(f"[BaseClient] Sending {method} request to {url}...")
         return {"status": 200, "body": "Success"}
 
 class AuthProxy(HttpClient):
@@ -18,7 +18,7 @@ class AuthProxy(HttpClient):
         self._api_key = api_key
 
     def send_request(self, url: str, method: str = "GET", data: dict = None):
-        print("[AuthProxy] Інжектуємо API Key у заголовок...")
+        print("[AuthProxy] Injecting API Key into headers...")
         #AuthProxy
         headers = {"Authorization": f"Bearer {self._api_key}"}
         return self._real_client.send_request(url, method, data)
