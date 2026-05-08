@@ -62,18 +62,23 @@ sys-pulse/
 │
 ├── core/
 │ ├── agent.py
-│ ├── scheduler.py
-│ └── config.py
+│ ├── config.py
+│ ├── decorators.py
+│ ├── events.py
+│ ├── http_client.py
+│ └── scheduler.py
 │
 ├── collectors/
 │ ├── base.py
 │ ├── cpu.py
-│ ├── memory.py
 │ ├── disk.py
+│ ├── memory.py
 │ └── processes.py
 │
 ├── storage/
 │ ├── base.py
+│ ├── cloud_storage.py
+│ ├── csv_storage.py
 │ └── memory_storage.py
 │
 ├── cli/
@@ -129,7 +134,7 @@ Usage:
 
 ```bash
 #Default mode (5-second interval)
-python -m cli.main start
+python -m cli.main
 
 #Custom interval
 python -m cli.main --interval 1
@@ -140,4 +145,16 @@ python -m cli.main --analyze
 #Web-page
 python -m cli.main --ui 
 (use in another terminal window after starting the main agent loop "python -m cli.main")
+
+#Last Metrics
+python -m utils.cloud_viewer view
+
+#Statistics
+python -m utils.cloud_viewer stats
+
+#Specific collector's metrics
+python -m utils.cloud_viewer collector cpu
+
+#Export to JSON
+python -m utils.cloud_viewer export example.json
 ```
