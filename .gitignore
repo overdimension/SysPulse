@@ -43,6 +43,8 @@ logs/
 *.DS_Store
 *.Thumbs.db
 
+cloud_data/
+
 # -------------------------------
 # Test / coverage reports
 # -------------------------------
