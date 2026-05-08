@@ -10,7 +10,7 @@ from collectors.disk import DiskCollector
 from collectors.processes import ProcessesCollector
 from storage.memory_storage import MemoryStorage
 from storage.csv_storage import CSVStorage
-from core.http_client import CloudExporter, AuthProxy, BaseHttpClient
+from core.http_client import CloudExporter, AuthProxy, BaseHttpClient, LocalCloudClient
 
 from core.config import DEFAULT_INTERVAL, LOG_DIR, CSV_PATH, APP_VERSION
 from core.scheduler import TaskScheduler
@@ -61,10 +61,12 @@ class MonitoringAgent:
         self.cloud_exporter = None
         if api_key:
             try:
-                base_client = BaseHttpClient()
-                auth_client = AuthProxy(base_client, api_key)
-                self.cloud_exporter = CloudExporter(auth_client)
-                logging.info("☁️ Cloud export enabled")
+                # Use local cloud storage by default (development mode)
+                local_client = LocalCloudClient()
+                # Optionally wrap with auth proxy for real API
+                # auth_client = AuthProxy(local_client, api_key)
+                self.cloud_exporter = CloudExporter(local_client)
+                logging.info("☁️ Cloud export enabled (local storage mode)")
             except Exception as e:
                 logging.error(f"❌ Failed to initialize cloud exporter: {e}")
         
