@@ -9,9 +9,13 @@ class AsyncLogReader:
 
     async def __aiter__(self):
         with open(self.file_path, 'r') as file:
-            for line in file:
-                await asyncio.sleep(0.1)
-                yield line.strip()
+            file.seek(0, 2)  # Seek to end
+            while True:
+                line = file.readline()
+                if line:
+                    yield line.strip()
+                else:
+                    await asyncio.sleep(0.1)
 
 async def error_filter(log_stream):
     """Asynchronous generator for filtering critical errors"""

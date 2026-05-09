@@ -2,6 +2,8 @@ import time
 import logging
 import os
 import sys
+import asyncio
+import threading
 from tabulate import tabulate
 
 from collectors.cpu import CPUCollector
@@ -16,6 +18,7 @@ from core.config import DEFAULT_INTERVAL, LOG_DIR, CSV_PATH, APP_VERSION
 from core.scheduler import TaskScheduler
 from core.decorators import log
 from core.events import EventEmitter
+from utils.reader import AsyncLogReader, error_filter
 
 #Logging settings
 if not os.path.exists(LOG_DIR):
@@ -44,6 +47,7 @@ class MonitoringAgent:
         self.interval = interval
         self.scheduler = TaskScheduler()
         self.event_emitter = EventEmitter()
+        self.log_file = os.path.join(LOG_DIR, "agent.log")
         
         self.collectors = [
             CPUCollector(),
@@ -78,6 +82,13 @@ class MonitoringAgent:
         """Start the agent via the scheduler"""
         logging.info(f"🚀 SysPulse Agent v{APP_VERSION} started.")
         logging.info("Press Ctrl+C to stop.")
+
+        # Start async log monitoring in a separate thread
+        def run_async_loop():
+            asyncio.run(self.monitor_logs())
+        
+        thread = threading.Thread(target=run_async_loop, daemon=True)
+        thread.start()
 
         #Poll all sensors
         self.scheduler.add_job(self.process_tick, self.interval)
@@ -162,6 +173,11 @@ class MonitoringAgent:
     def _on_high_load(self, proc):
         """Handle high load process event"""
         logging.warning(f"⚠️ HIGH LOAD: {proc['name']} (PID: {proc['pid']}, CPU: {proc['cpu_percent']}%)")
+
+    async def monitor_logs(self):
+        """Asynchronous log monitoring for real-time error alerts"""
+        async for alert in error_filter(AsyncLogReader(self.log_file)):
+            logging.warning(alert)
 
     @log(level="INFO")
     def analyze_process_stream(self):
