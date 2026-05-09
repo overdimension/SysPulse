@@ -16,14 +16,25 @@ def view_metrics():
         print("❌ No metrics found in cloud storage")
         return
     
-    print(f"\n📊 Last 20 metrics from cloud storage:\n")
+    print(f"\n[*] Last 20 metrics from cloud storage:\n")
     
     for i, entry in enumerate(metrics, 1):
         timestamp = entry.get('timestamp', 'N/A')
         data = entry.get('metrics', {})
-        collector = data.get('collector', 'Unknown')
+        
+        #Try to determine collector from data structure
+        collector = 'Unknown'
+        if 'usage_percent' in data and 'logical_cores' in data:
+            collector = 'CPU'
+        elif 'total_gb' in data and 'available_gb' in data and 'used_gb' in data:
+            collector = 'MEMORY'
+        elif 'total_gb' in data and 'used_gb' in data and 'free_gb' in data and 'available_gb' not in data:
+            collector = 'DISK'
+        elif 'top_processes' in data:
+            collector = 'PROCESSES'
+        
         print(f"\n{i}. [{timestamp}] {collector}")
-        print(f"   Data: {json.dumps(data.get('metrics', {}), indent=2)}")
+        print(f"   Data: {json.dumps(data, indent=2)}")
 
 
 def view_statistics():
@@ -31,7 +42,7 @@ def view_statistics():
     storage = CloudStorage()
     stats = storage.get_statistics()
     
-    print(f"\n📈 Cloud Storage Statistics:\n")
+    print(f"\n[*] Cloud Storage Statistics:\n")
     print(f"Total entries: {stats['total_entries']}")
     print(f"Storage file: {stats['storage_file']}")
     
@@ -44,19 +55,37 @@ def view_statistics():
 def view_by_collector(collector_name):
     """View metrics from specific collector"""
     storage = CloudStorage()
-    metrics = storage.get_metrics_by_collector(collector_name)
+    all_metrics = storage.get_all_metrics()
     
-    if not metrics:
+    #Filter by collector type based on data structure
+    filtered_metrics = []
+    for entry in all_metrics:
+        data = entry.get('metrics', {})
+        entry_collector = 'Unknown'
+        
+        if 'usage_percent' in data and 'logical_cores' in data:
+            entry_collector = 'cpu'
+        elif 'total_gb' in data and 'available_gb' in data and 'used_gb' in data:
+            entry_collector = 'memory'
+        elif 'total_gb' in data and 'used_gb' in data and 'free_gb' in data and 'available_gb' not in data:
+            entry_collector = 'disk'
+        elif 'top_processes' in data:
+            entry_collector = 'processes'
+        
+        if entry_collector.lower() == collector_name.lower():
+            filtered_metrics.append(entry)
+    
+    if not filtered_metrics:
         print(f"❌ No metrics found for collector: {collector_name}")
         return
     
-    print(f"\n📊 Metrics for {collector_name.upper()} (last {len(metrics)} entries):\n")
+    print(f"\n📊 Metrics for {collector_name.upper()} (last {len(filtered_metrics)} entries):\n")
     
-    for entry in metrics[-10:]:  # Show last 10
+    for entry in filtered_metrics[-10:]:  #Show last 10
         timestamp = entry.get('timestamp', 'N/A')
         data = entry.get('metrics', {})
         print(f"[{timestamp}]")
-        print(f"  {json.dumps(data.get('metrics', {}), indent=2)}")
+        print(f"  {json.dumps(data, indent=2)}")
 
 
 def clear_storage():
