@@ -13,6 +13,12 @@ class AsyncLogReader:
                 await asyncio.sleep(0.1)
                 yield line.strip()
 
+async def error_filter(log_stream):
+    """Asynchronous generator for filtering critical errors"""
+    async for line in log_stream:
+        if "ERROR" in line or "Critical" in line:
+            yield f"Critical Alert: {line}"
+
 def log_stream_reader(file_path):
     """
     Incremental reading of logs without loading the entire file into RAM.
