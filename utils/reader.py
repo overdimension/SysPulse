@@ -1,6 +1,17 @@
 import csv
 import logging
 import os
+import asyncio
+
+class AsyncLogReader:
+    def __init__(self, file_path):
+        self.file_path = file_path
+
+    async def __aiter__(self):
+        with open(self.file_path, 'r') as file:
+            for line in file:
+                await asyncio.sleep(0.1)
+                yield line.strip()
 
 def log_stream_reader(file_path):
     """
